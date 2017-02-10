@@ -1,0 +1,115 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
+<link rel="import" href="../goc-styles/goc-styles.html">
+<link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../goc-apps/goc-apps-data.html">
+<link rel="import" href="../goc-apps/goc-app-icon.html">
+<link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+
+<!--
+`app-date-and-time`
+
+@demo demo/index.html
+-->
+<dom-module id="app-date-and-time">
+  <template>
+    <style include="header-layout-styles form-styles icon-btn-styles">
+      :host {
+        background: var(--goc-background-color);
+        display: block;
+        height: 100%;
+      }
+
+      .col {
+        margin-bottom: 30px;
+      }
+
+      @media(min-width: 640px) {
+        .header-layout__content {
+          @apply --layout-horizontal;
+        }
+
+        .col {
+          @apply --layout-flex;
+          margin-bottom: 0;
+          margin-right: 30px;
+        }
+
+        .col--last {
+          margin-right: 0;
+        }
+      }
+
+      /* preview */
+      .preview-container {
+        background: var(--paper-grey-300);
+        border: 1px solid var(--paper-grey-400);
+        box-sizing: border-box;
+        border-radius: 3px;
+      }
+    </style>
+
+    <goc-apps-data app-name="date-and-time" item="{{appInfo}}"></goc-apps-data>
+    
+    <div class="header-layout">
+      <div class="header-layout__header">
+        <div class="header-toolbar">
+          <button class="icon-btn icon-btn--primary" on-click="_onBackClicked" title="Back">
+            <iron-icon icon="arrow-back"></iron-icon>
+          </button>
+
+          <goc-app-icon size="small" app-name="date-and-time"></goc-app-icon>
+
+          <div class="header-toolbar__main-content">
+            <div class="header-toolbar__title">[[contentName]]</div>
+            <div class="header-toolbar__subtitle">[[appInfo.displayName]]</div>
+          </div>
+          <!--<paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>-->
+        </div>
+      </div>
+
+      <div class="header-layout__content">
+        <div class="col">
+          <div class="preview-container">
+          </div>
+        </div>
+        <div class="col col--last">
+          <div class="form">
+            <div class="form__item">
+              <div class="form__label">form1</div>
+            </div>
+
+            <div class="form__item">
+              <div class="form__label">form2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    
+    class AppDateAndTime extends AppLocalizeMixin(Polymer.Element) {
+
+      static get is() {return 'app-date-and-time';}
+
+      static get config() {
+        return {
+          properties: {
+
+            contentName: String
+
+          }
+        };
+      }
+
+      _onBackClicked() {
+      }
+
+    }
+
+    customElements.define(AppDateAndTime.is, AppDateAndTime);
+
+  </script>
+</dom-module>

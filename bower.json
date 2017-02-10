@@ -1,0 +1,17 @@
+{
+  "name": "app-date-and-time",
+  "main": "app-date-and-time.html",
+  "dependencies": {
+    "app-localize-mixin": "git@github.com:sharedlabs/app-localize-mixin.git#^1.0.0",
+    "goc-apps": "git@github.com:gocast/goc-apps.git",
+    "goc-icons": "git@github.com:gocast/goc-icons.git",
+    "goc-styles": "git@github.com:gocast/goc-styles.git",
+    "paper-spinner": "PolymerElements/paper-spinner#^1.2.1",
+    "polymer": "Polymer/polymer#2.0-preview"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}
