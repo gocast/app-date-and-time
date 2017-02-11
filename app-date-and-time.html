@@ -49,7 +49,7 @@
       }
     </style>
 
-    <goc-apps-collection app-name="date-and-time" item="{{appInfo}}"></goc-apps-collection>
+    <goc-apps-collection app-name="date-and-time" item="{{appInfo}}" language="[[language]]"></goc-apps-collection>
     
     <div class="header-layout">
       <div class="header-layout__header">
@@ -98,7 +98,14 @@
         return {
           properties: {
 
-            contentName: String
+            contentName: String,
+
+            language: {
+              type: String,
+              value: _ => {
+                return 'en'
+              }
+            }
 
           }
         };
