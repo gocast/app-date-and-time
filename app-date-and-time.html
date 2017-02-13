@@ -2,9 +2,13 @@
 <link rel="import" href="../app-localize-mixin/app-localize-mixin.html">
 <link rel="import" href="../goc-styles/goc-styles.html">
 <link rel="import" href="../goc-icons/goc-icons.html">
+<link rel="import" href="../touch-item/touch-item.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
 <link rel="import" href="../goc-apps/goc-apps-collection.html">
 <link rel="import" href="../goc-apps/goc-app-icon.html">
 <link rel="import" href="../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="app-date-and-time-player.html">
 
 <!--
 `app-date-and-time`
@@ -13,7 +17,7 @@
 -->
 <dom-module id="app-date-and-time">
   <template>
-    <style include="header-layout-styles form-styles icon-btn-styles">
+    <style include="header-layout-styles icon-btn-styles box-styles form-styles tabs-styles">
       :host {
         background: var(--goc-background-color);
         display: block;
@@ -42,10 +46,27 @@
 
       /* preview */
       .preview-container {
-        background: var(--paper-grey-300);
+        border-radius: 3px;
         border: 1px solid var(--paper-grey-400);
         box-sizing: border-box;
-        border-radius: 3px;
+        height: 322px;
+      }
+
+      @media(max-width: 640px) {
+        .preview-container {
+          border-left: none;
+          border-radius: 0;
+          border-right: none;
+        }
+      }
+
+      .pages > :not(.iron-selected) {
+        display: none !important;
+      }
+
+      app-date-and-time-player {
+        height: 100%;
+        width: 100%;
       }
     </style>
 
@@ -60,9 +81,7 @@
           <button class="icon-btn icon-btn--primary" on-click="_onBackClicked" title="Back">
             <iron-icon icon="arrow-back"></iron-icon>
           </button>
-
           <goc-app-icon size="small" app-name="date-and-time"></goc-app-icon>
-
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[contentName]]</div>
             <div class="header-toolbar__subtitle">[[appInfo.displayName]]</div>
@@ -73,18 +92,75 @@
 
       <div class="header-layout__content">
         <div class="col">
-          <div class="preview-container">
+          <div class="preview-container" style$="[[_computePreviewBackgrond(data.backgroundColor)]]">
+            <app-date-and-time-player
+                timezone="[[data.timezone]]"
+                show-digital-clock="[[data.showDigitalClock]]"
+                show-analog-clock="[[data.showAnalogClock]]"
+                use-twenty-four-hours="[[data.useTwentyFourHours]]"
+                show-seconds="[[data.showSeconds]]"
+                show-week-day="[[data.showWeekDay]]"
+                show-date="[[data.showDate]]"></app-date-and-time-player>
           </div>
         </div>
-        <div class="col col--last">
-          <div class="form">
-            <div class="form__item">
-              <div class="form__label">form1</div>
-            </div>
 
-            <div class="form__item">
-              <div class="form__label">form2</div>
-            </div>
+        <div class="col col--last">
+          <div class="box">
+            <iron-selector class="box__tabs" selected="{{selectedTab}}" attr-for-selected="name" selected-class="box__tab-item--selected">
+              <touch-item name="options" class="box__tab-item">[[localize('TabMenu.Options')]]</touch-item>
+              <touch-item name="style" class="box__tab-item">[[localize('TabMenu.Style')]]</touch-item>
+            </iron-selector>
+
+            <iron-selector class="pages" selected="{{selectedTab}}" attr-for-selected="name">
+              <div class="form" name="options">
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.DisplayAnalog')]]</div>
+                  <paper-toggle-button checked="{{data.showAnalogClock}}"></paper-toggle-button>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.DisplayDigital')]]</div>
+                  <paper-toggle-button checked="{{data.showDigitalClock}}"></paper-toggle-button>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
+                  <paper-toggle-button checked="{{data.showSeconds}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.Use24hours')]]</div>
+                  <paper-toggle-button checked="{{data.useTwentyFourHours}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
+                  <paper-toggle-button checked="{{data.showWeekDay}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Options.ShowDate')]]</div>
+                  <paper-toggle-button checked="{{data.showDate}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                </div>
+              </div>
+              <div class="form" name="style">
+                <div class="form__item">
+                  <div class="form__label">[[localize('Style.Color')]]</div>
+                  <color-input class="form__input-container">
+                    <input
+                        id="colorInput"
+                        class="form__input"
+                        value="[[data.color]]"
+                        placeholder$="[[localize('Style.Color')]]">
+                  </color-input>
+                </div>
+                <div class="form__item">
+                  <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
+                  <color-input class="form__input-container">
+                    <input
+                        id="backgroundColorInput"
+                        class="form__input"
+                        value="[[data.backgroundColor]]"
+                        placeholder$="[[localize('Style.BackgroundColor')]]">
+                  </color-input>                  
+                </div>
+              </div>
+            </iron-selector>
           </div>
         </div>
       </div>
@@ -101,20 +177,81 @@
         return {
           properties: {
 
+            data: {
+              type: Object,
+              value: _ => {
+                return {};
+              }
+            },
+
             contentName: String,
+
+            contentId: String,
+
+            selectedTab: {
+              type: String,
+              value: 'options'
+            },
 
             language: {
               type: String,
               value: _ => {
                 return 'en'
               }
+            },
+
+            resources: {
+              type: Object,
+              value: _ => {
+                return {
+                  "en": {
+                    "TabMenu.Options": "Options",
+                    "TabMenu.Style": "Style",
+                    "Options.DisplayAnalog": "Display analog clock",
+                    "Options.DisplayDigital": "Display digital clock",
+                    "Options.DisplaySeconds": "Display the time with seconds",
+                    "Options.Use24hours": "Use a 24-hour clock",
+                    "Options.ShowWeekDay": "Show the day of the week",
+                    "Options.ShowDate": "Show date",
+                    "Style.Color": "Color",
+                    "Style.BackgroundColor": "Background color"
+                  },
+                  "es": {
+                    "TabMenu.Options": "Opciones",
+                    "TabMenu.Style": "Estilo",
+                    "Options.DisplayAnalog": "Mostrar reloj analógico",
+                    "Options.DisplayDigital": "Mostrar reloj digital",
+                    "Options.DisplaySeconds": "Mostrar la hora con los segundos",
+                    "Options.Use24hours": "Usar el reloj de 24 horas",
+                    "Options.ShowWeekDay": "Mostrar el día de la semana",
+                    "Options.ShowDate": "Mostrar feecha",
+                    "Style.Color": "Color",
+                    "Style.BackgroundColor": "Color de fondo"
+                  }
+                };
+              }
             }
+            
 
           }
         };
       }
 
+      _updateContent() {
+        this.fire('update-content', {
+          data: this.data,
+          contentId: this.contentId,
+          updateRelease: false          
+        });
+      }
+
+      _computePreviewBackgrond(backgroundColor) {
+        backgroundColor = backgroundColor || 'transparent';
+        return `background: linear-gradient(to right, rgba(0,0,0,0), ${backgroundColor}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAADNJREFUOBFjvHHjxn8GPEBDQ4MRjzQDEz5JYuRGDWAYBIGIN45B0UgonYxG42CIRopjAQAbjQemQaw2YQAAAABJRU5ErkJggg==')`;
+      }
+
       _onBackClicked() {
+        this.fire('close-app');
       }
 
     }

@@ -1,0 +1,164 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../moment-import/moment-with-locales.html">
+<link rel="import" href="../moment-import/moment-timezone.html">
+<link rel="import" href="../analog-clock/analog-clock.html">
+
+<dom-module id="app-date-and-time-player">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      /* analog-clock block */
+      analog-clock {
+        @apply --layout-horizontal;
+        @apply --layout-center-center;        
+        width: 100%;
+      }
+
+      /* digital-clock block */
+      .digital-clock {
+        @apply --layout-vertical;
+        @apply --layout-center-center;
+        width: 100%;
+      }
+
+      .digital-clock__prefix {
+        margin-right: 5px;
+      }
+    </style>
+
+    <dom-if if="[[showAnalogClock]]">
+      <template>
+        <analog-clock
+            date="[[_computeDate(_currentTime)]]"
+            show-seconds="[[showSeconds]]"
+            style$="[[_computeContainerRowHeight(showDigitalClock)]]">
+        </analog-clock>
+      </template>
+    </dom-if>
+
+    <dom-if if="[[showDigitalClock]]">
+      <template>
+        <div class="digital-clock" style$="[[_computeContainerRowHeight(showAnalogClock)]]">
+          <div>
+            <span class="digital-clock__prefix">
+              [[_computeDigitalClockPrefix(_currentTime, showWeekDay, showDate)]]
+            </span>
+            <span>
+              [[_computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds)]]
+            </span>
+          </div>
+        </div>
+      </template>
+    </dom-if>
+
+  </template>
+  <script>
+
+    class AppDateAndTimePlayer extends Polymer.Element {
+
+      static get is() {return 'app-date-and-time-player';}
+
+      static get config() {
+        return {
+          properties: {
+            
+            timezone: String,
+
+            showDigitalClock: Boolean,
+
+            showAnalogClock: Boolean,
+
+            useTwentyFourHours: Boolean,
+
+            showSeconds: Boolean,
+            
+            showWeekDay: Boolean,
+
+            showDate: Boolean,
+
+            _currentTime: Object,
+
+            _currentTimeInterval: Number
+
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._startTime();
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        this._stopTime();
+      }
+
+      _startTime() {
+        this._currentTime = moment(new Date());
+
+        this._currentTimeInterval = setInterval(_ => {
+          this._currentTime = moment(new Date());
+        }, 500);
+      }
+
+      _stopTime() {
+        if (this._currentTimeInterval) {
+          clearTimeout(this._currentTimeInterval);
+          this._currentTimeInterval = null;
+        }
+      }
+
+      _computeDigitalClockPrefix(_currentTime, showWeekDay, showDate) {
+        let prefix = '';
+
+        if (showWeekDay) {
+          prefix += _currentTime.format('dddd');
+          if (showDate) {
+            prefix += ', ';
+          }
+        }
+
+        if (showDate) {
+          prefix += _currentTime.format('DD MMMM');
+        }
+
+        return prefix;
+      }
+
+      _computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds) {
+        let format = '';
+  
+        if (useTwentyFourHours) {
+          format += 'H:HH';
+        } else {
+          format += 'h:hh';
+        }
+
+        if (showSeconds) {
+          format += ':ss';
+        }
+
+        return _currentTime.format(format);
+      }
+
+      _computeContainerRowHeight(half) {
+        if (half) {
+          return 'height: 50%';
+        }
+        return 'height: 100%';
+      }
+
+      _computeDate(_currentTime) {
+        return _currentTime.toDate();
+      }
+ 
+    }
+
+    customElements.define(AppDateAndTimePlayer.is, AppDateAndTimePlayer);
+
+  </script>
+</dom-module>
