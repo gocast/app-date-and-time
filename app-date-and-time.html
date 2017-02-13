@@ -133,7 +133,7 @@
                   <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
                   <paper-toggle-button checked="{{data.showWeekDay}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
                 </div>
-                <div class="form__item">
+                <div class="form__item form__item--last">
                   <div class="form__label">[[localize('Options.ShowDate')]]</div>
                   <paper-toggle-button checked="{{data.showDate}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
                 </div>
@@ -149,7 +149,7 @@
                         placeholder$="[[localize('Style.Color')]]">
                   </color-input>
                 </div>
-                <div class="form__item">
+                <div class="form__item form__item--last">
                   <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
                   <color-input class="form__input-container">
                     <input
