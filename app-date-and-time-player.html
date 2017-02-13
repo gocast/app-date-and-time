@@ -7,7 +7,9 @@
   <template>
     <style>
       :host {
+        box-sizing: border-box;
         display: inline-block;
+        padding: 2%;
       }
 
       /* analog-clock block */
@@ -15,40 +17,47 @@
         @apply --layout-horizontal;
         @apply --layout-center-center;        
         width: 100%;
+        transition: width 0.01s, height 0.01s;
       }
 
       /* digital-clock block */
       .digital-clock {
         @apply --layout-vertical;
         @apply --layout-center-center;
+        box-sizing: border-box;
+        font-size: 4vw;
+        padding-top: 2%;
+        transition: width 0.01s, height 0.01s;
         width: 100%;
       }
 
-      .digital-clock__prefix {
-        margin-right: 5px;
+      .digital-clock__date {
+        white-space: nowrap;
       }
     </style>
 
     <dom-if if="[[showAnalogClock]]">
       <template>
         <analog-clock
+            style$="[[_computeAnalogClockHeight(showDigitalClock)]]"
             date="[[_computeDate(_currentTime)]]"
             show-seconds="[[showSeconds]]"
-            style$="[[_computeContainerRowHeight(showDigitalClock)]]">
+            on-transitionend="_updateSizes">
         </analog-clock>
       </template>
     </dom-if>
 
     <dom-if if="[[showDigitalClock]]">
       <template>
-        <div class="digital-clock" style$="[[_computeContainerRowHeight(showAnalogClock)]]">
-          <div>
-            <span class="digital-clock__prefix">
-              [[_computeDigitalClockPrefix(_currentTime, showWeekDay, showDate)]]
-            </span>
-            <span>
-              [[_computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds)]]
-            </span>
+        <div
+            class="digital-clock"
+            style$="[[_computeDigitalClockHeight(showAnalogClock)]]"
+            on-transitionend="_updateSizes">
+          <div class="digital-clock__date">
+            [[_computeDigitalClockPrefix(_currentTime, showWeekDay, showDate)]]
+          </div>
+          <div class="digital-clock__time">
+            [[_computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds)]]
           </div>
         </div>
       </template>
@@ -112,6 +121,14 @@
         }
       }
 
+      _updateSizes() {
+        if (this.showAnalogClock) {
+          const analogClock = this.shadowRoot.querySelector('analog-clock');
+          const rect = analogClock.getBoundingClientRect();
+          analogClock.width = rect.height;
+        }
+      }
+
       _computeDigitalClockPrefix(_currentTime, showWeekDay, showDate) {
         let prefix = '';
 
@@ -145,9 +162,16 @@
         return _currentTime.format(format);
       }
 
-      _computeContainerRowHeight(half) {
-        if (half) {
-          return 'height: 50%';
+      _computeAnalogClockHeight(showDigitalClock) {
+        if (showDigitalClock) {
+          return 'height: 65%';
+        }
+        return 'height: 100%';
+      }
+
+      _computeDigitalClockHeight(showAnalogClock) {
+        if (showAnalogClock) {
+          return 'height: 35%';
         }
         return 'height: 100%';
       }
