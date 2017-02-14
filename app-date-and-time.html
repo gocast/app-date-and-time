@@ -251,7 +251,7 @@
       }
 
       _onBackClicked() {
-        this.fire('close-app');
+        this.dispatchEvent(new CustomEvent('close-app', {bubbles: true}));
       }
 
     }
