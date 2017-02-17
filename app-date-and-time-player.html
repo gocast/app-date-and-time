@@ -13,6 +13,13 @@
         padding: 2%;
         contain: strict;
         overflow: hidden;
+        @apply --layout-vertical;
+        @apply --layout-center-center;
+      }
+
+      #container {
+        @apply --layout-vertical;
+        @apply --layout-center-center;
       }
 
       /* analog-clock block */
@@ -45,38 +52,41 @@
       }
     </style>
 
-    <dom-if if="[[showAnalogClock]]">
-      <template>
-        <analog-clock
-            style$="[[_computeAnalogClockHeight(showDigitalClock)]]"
-            date="[[_computeDate(_currentTime)]]"
-            show-seconds="[[showSeconds]]"
-            on-transitionend="_updateSizes">
-        </analog-clock>
-      </template>
-    </dom-if>
 
-    <dom-if if="[[showDigitalClock]]">
-      <template>
-        <div
-            class="digital-clock"
-            style$="[[_computeDigitalClockHeight(showAnalogClock)]]"
-            on-transitionend="_updateSizes">
+    <div id="container">
+      <dom-if if="[[showAnalogClock]]">
+        <template>
+          <analog-clock
+              style$="[[_computeAnalogClockHeight(showDigitalClock)]]"
+              date="[[_computeDate(_currentTime)]]"
+              show-seconds="[[showSeconds]]"
+              on-transitionend="_updateSizes">
+          </analog-clock>
+        </template>
+      </dom-if>
 
-          <dom-if if="[[_computeShowDate(showWeekDay, showDate)]]">
-            <template>
-              <fitted-text data-id="digitalDate" class="digital-clock__date"></fitted-text>
-            </template>
-          </dom-if>
+      <dom-if if="[[showDigitalClock]]">
+        <template>
+          <div
+              class="digital-clock"
+              style$="[[_computeDigitalClockHeight(showAnalogClock)]]"
+              on-transitionend="_updateSizes">
 
-          <dom-if if="[[showTime]]">
-            <template>
-              <fitted-text data-id="digitalTime" class="digital-clock__time"></fitted-text>
-            </template>
-          </dom-if>
-        </div>
-      </template>
-    </dom-if>
+            <dom-if if="[[_computeShowDate(showWeekDay, showDate)]]">
+              <template>
+                <fitted-text data-id="digitalDate" class="digital-clock__date"></fitted-text>
+              </template>
+            </dom-if>
+
+            <dom-if if="[[showTime]]">
+              <template>
+                <fitted-text data-id="digitalTime" class="digital-clock__time"></fitted-text>
+              </template>
+            </dom-if>
+          </div>
+        </template>
+      </dom-if>
+    </div>
 
   </template>
   <script>
@@ -159,14 +169,25 @@
         };
       }
 
+      constructor() {
+        super();
+        this._windowResize = this._windowResize.bind(this);
+        this._documentResizeDebounce = null;
+        // The last time a document resize update was done (ms)
+        this._documentResizeLastUpdate = null;
+      }
+
       connectedCallback() {
         super.connectedCallback();
+        this._toggleListeners({enable: true});
         Object.assign(this, this.defaultData);
+        requestAnimationFrame(_ => this._updateSizes());
         this._startTime();
       }
 
       disconnectedCallback() {
         super.disconnectedCallback();
+        this._toggleListeners({enable: false});
         this._stopTime();
       }
 
@@ -182,6 +203,11 @@
           this._digitalTime = this.root.querySelector('[data-id=digitalTime]');
         }
         return this._digitalTime;
+      }
+
+      _toggleListeners({enable}) {
+        const method = enable ? 'addEventListener' : 'removeEventListener';
+        window[method]('resize', this._windowResize);
       }
 
       _paddingChanged(padding, digitalDate, digitalTime) {
@@ -269,6 +295,24 @@
         }
       }
 
+      _windowResize() {
+        clearTimeout(this._documentResizeDebounce);
+
+        // Throttle
+        const waitedTooLong = window.performance.now() - this._documentResizeLastUpdate > 128;
+        const skipWait = !this._documentResizeLastUpdate || waitedTooLong;
+
+        if (skipWait) {
+          this._documentResizeLastUpdate = performance.now();
+          this._updateSizes();
+        } else {
+          this._documentResizeDebounce = setTimeout(_ => {
+            this._documentResizeLastUpdate = performance.now();
+            this._updateSizes();
+          }, 128);
+        }
+      }
+
       _startTime() {
         this._currentTime = moment(new Date());
         this._currentTimeInterval = setInterval(_ => {
@@ -288,6 +332,19 @@
           const analogClock = this.shadowRoot.querySelector('analog-clock');
           const rect = analogClock.getBoundingClientRect();
           analogClock.width = rect.height;
+        }
+
+        const width = this.offsetWidth;
+        const height = this.offsetHeight;
+
+        if (width > height) {
+          this.$.container.style.width = `${(height/width) * 100}%`;
+          this.$.container.style.height = '100%';
+        }
+
+        if (height > width) {
+          this.$.container.style.width = '100%';
+          this.$.container.style.height = `${(width/height) * 100}%`;
         }
       }
 
