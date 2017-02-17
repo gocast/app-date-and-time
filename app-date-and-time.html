@@ -109,7 +109,7 @@
         </div>
       </div>
 
-      <dom-if if="[[visible]]">
+      <dom-if if="[[_appVisible]]">
         <template>
 
           <div class="header-layout__content">
@@ -242,7 +242,7 @@
         return {
           properties: {
 
-            data: {
+            _defaultData: {
               type: Object,
               value: _ => {
                 return {
@@ -261,6 +261,11 @@
               },
             },
 
+            data: {
+              type: Object,
+              observer: '_dataChanged',
+            },
+
             contentName: String,
 
             contentId: String,
@@ -275,6 +280,17 @@
               value: _ => {
                 return 'en'
               }
+            },
+
+            /**
+             * True when data has been loaded and element is visible.
+             * @type {Boolean}
+             */
+            _appVisible: {
+              type: Boolean,
+              value: false,
+              computed: '_computeAppVisible(visible, data)',
+              observer: '_appVisibleChanged',
             },
 
             resources: {
@@ -317,20 +333,33 @@
               }
             },
 
-          }
+          },
+
         };
       }
 
       connectedCallback() {
         super.connectedCallback();
-        // workaround - property default is removed otherwise
-        requestAnimationFrame(_ => this.selectedTab = 'options');
+      }
+
+      _dataChanged(data) {
+        // Initialize data.
+        if (!data) {
+          this.data = Object.assign({}, this._defaultData);
+        }
       }
 
       _paddingChanged() {
         const padding = Number(this.$.paddingInput.value);
         if (!isNaN(padding) && this.data.padding !== padding) {
           this.set('data.padding', padding);
+        }
+      }
+
+      _appVisibleChanged(_appVisible) {
+        if (_appVisible) {
+          // workaround - property default is removed otherwise
+          requestAnimationFrame(_ => this.selectedTab = 'options');
         }
       }
 
@@ -350,6 +379,10 @@
             updateRelease: false
           }
         }))
+      }
+
+      _computeAppVisible(visible, data) {
+        return data && visible;
       }
 
       _computePreviewBackgrond(backgroundColor) {
