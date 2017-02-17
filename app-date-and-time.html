@@ -20,7 +20,6 @@
     <style include="header-layout-styles icon-btn-styles box-styles form-styles tabs-styles">
       :host {
         background: var(--goc-background-color);
-        display: block;
         height: 100%;
       }
 
@@ -110,119 +109,126 @@
         </div>
       </div>
 
-      <div class="header-layout__content">
-        <div class="col">
-          <div class="preview-container" style$="[[_computePreviewBackgrond(data.backgroundColor)]]">
-            <app-date-and-time-player
-                timezone="[[data.timezone]]"
-                show-digital-clock="[[data.showDigitalClock]]"
-                show-analog-clock="[[data.showAnalogClock]]"
-                use-twenty-four-hours="[[data.useTwentyFourHours]]"
-                show-seconds="[[data.showSeconds]]"
-                show-week-day="[[data.showWeekDay]]"
-                show-time="[[data.showTime]]"
-                padding="[[data.padding]]"
-                show-date="[[data.showDate]]"></app-date-and-time-player>
-          </div>
-        </div>
+      <dom-if if="[[visible]]">
+        <template>
 
-        <div class="col col--last">
-          <div class="box">
-            <iron-selector class="box__tabs" selected="{{selectedTab}}" attr-for-selected="name" selected-class="box__tab-item--selected">
-              <touch-item name="options" class="box__tab-item">[[localize('TabMenu.Options')]]</touch-item>
-              <touch-item name="style" class="box__tab-item">[[localize('TabMenu.Style')]]</touch-item>
-            </iron-selector>
-
-            <iron-selector class="pages" selected="{{selectedTab}}" attr-for-selected="name">
-              <div class="form" name="options">
-                <div class="form__item">
-                  <div class="form__label">[[localize('Options.DisplayAnalog')]]</div>
-                  <paper-toggle-button checked="{{data.showAnalogClock}}"></paper-toggle-button>
-                </div>
-                <div class="form__item form__item--last">
-                  <div class="form__label">[[localize('Options.DisplayDigital')]]</div>
-                  <paper-toggle-button checked="{{data.showDigitalClock}}"></paper-toggle-button>
-                </div>
-
-                <div class="digital-clock-options" disabled$="[[!data.showDigitalClock]]">
-                  <h2 class="digital-clock-options__title">[[localize('Options.DigitalClockOptions.Title')]]</h2>
-
-                  <div class="form__item">
-                    <div class="form__label">[[localize('Options.DisplayTime')]]</div>
-                    <paper-toggle-button
-                        checked="{{data.showTime}}"
-                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
-                  </div>
-
-                  <div class="form__item">
-                    <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
-                    <paper-toggle-button
-                        checked="{{data.showWeekDay}}"
-                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
-                  </div>
-
-                  <div class="form__item">
-                    <div class="form__label">[[localize('Options.ShowDate')]]</div>
-                    <paper-toggle-button
-                        checked="{{data.showDate}}"
-                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
-                  </div>
-
-                  <div class="form__item">
-                    <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
-                    <paper-toggle-button
-                        checked="{{data.showSeconds}}"
-                        disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
-                  </div>
-
-                  <div class="form__item form__item--last">
-                    <div class="form__label">[[localize('Options.Use24hours')]]</div>
-                    <paper-toggle-button
-                        checked="{{data.useTwentyFourHours}}"
-                        disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
-                  </div>
-                </div>
+          <div class="header-layout__content">
+            <div class="col">
+              <div class="preview-container" style$="[[_computePreviewBackgrond(data.backgroundColor)]]">
+                <app-date-and-time-player
+                    timezone="[[data.timezone]]"
+                    show-digital-clock="[[data.showDigitalClock]]"
+                    show-analog-clock="[[data.showAnalogClock]]"
+                    use-twenty-four-hours="[[data.useTwentyFourHours]]"
+                    show-seconds="[[data.showSeconds]]"
+                    show-week-day="[[data.showWeekDay]]"
+                    show-time="[[data.showTime]]"
+                    padding="[[data.padding]]"
+                    show-date="[[data.showDate]]"></app-date-and-time-player>
               </div>
-              <div class="form" name="style">
-                <div class="form__item">
-                  <div class="form__label">[[localize('Style.Color')]]</div>
-                  <color-input class="form__input-container">
-                    <input
-                        id="colorInput"
-                        class="form__input"
-                        value="[[data.color]]"
-                        placeholder$="[[localize('Style.Color')]]">
-                  </color-input>
-                </div>
+            </div>
 
-                <div class="form__item">
-                  <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
-                  <color-input class="form__input-container">
-                    <input
-                        id="backgroundColorInput"
-                        class="form__input"
-                        value="[[data.backgroundColor]]"
-                        placeholder$="[[localize('Style.BackgroundColor')]]">
-                  </color-input>
-                </div>
+            <div class="col col--last">
+              <div class="box">
+                <iron-selector class="box__tabs" selected="{{selectedTab}}" attr-for-selected="name" selected-class="box__tab-item--selected">
+                  <touch-item name="options" class="box__tab-item">[[localize('TabMenu.Options')]]</touch-item>
+                  <touch-item name="style" class="box__tab-item">[[localize('TabMenu.Style')]]</touch-item>
+                </iron-selector>
 
-                <div class="form__item form__item--last">
-                  <div class="form__label">[[localize('Style.Margins.Label')]]</div>
-                  <color-input class="form__input-container">
-                    <input
-                        id="paddingInput"
-                        class="form__input"
-                        type="number"
-                        value="[[data.padding]]"
-                        on-change="_paddingChanged"
-                        placeholder$="[[localize('Style.Margins.Placeholder')]]">
-                  </color-input>
-                </div>
+                <iron-selector class="pages" selected="{{selectedTab}}" attr-for-selected="name">
+                  <div class="form" name="options">
+                    <div class="form__item">
+                      <div class="form__label">[[localize('Options.DisplayAnalog')]]</div>
+                      <paper-toggle-button checked="{{data.showAnalogClock}}"></paper-toggle-button>
+                    </div>
+                    <div class="form__item form__item--last">
+                      <div class="form__label">[[localize('Options.DisplayDigital')]]</div>
+                      <paper-toggle-button checked="{{data.showDigitalClock}}"></paper-toggle-button>
+                    </div>
+
+                    <div class="digital-clock-options" disabled$="[[!data.showDigitalClock]]">
+                      <h2 class="digital-clock-options__title">[[localize('Options.DigitalClockOptions.Title')]]</h2>
+
+                      <div class="form__item">
+                        <div class="form__label">[[localize('Options.DisplayTime')]]</div>
+                        <paper-toggle-button
+                            checked="{{data.showTime}}"
+                            disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                      </div>
+
+                      <div class="form__item">
+                        <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
+                        <paper-toggle-button
+                            checked="{{data.showWeekDay}}"
+                            disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                      </div>
+
+                      <div class="form__item">
+                        <div class="form__label">[[localize('Options.ShowDate')]]</div>
+                        <paper-toggle-button
+                            checked="{{data.showDate}}"
+                            disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                      </div>
+
+                      <div class="form__item">
+                        <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
+                        <paper-toggle-button
+                            checked="{{data.showSeconds}}"
+                            disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
+                      </div>
+
+                      <div class="form__item form__item--last">
+                        <div class="form__label">[[localize('Options.Use24hours')]]</div>
+                        <paper-toggle-button
+                            checked="{{data.useTwentyFourHours}}"
+                            disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form" name="style">
+                    <div class="form__item">
+                      <div class="form__label">[[localize('Style.Color')]]</div>
+                      <color-input class="form__input-container">
+                        <input
+                            id="colorInput"
+                            class="form__input"
+                            value="[[data.color]]"
+                            placeholder$="[[localize('Style.Color')]]">
+                      </color-input>
+                    </div>
+
+                    <div class="form__item">
+                      <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
+                      <color-input class="form__input-container">
+                        <input
+                            id="backgroundColorInput"
+                            class="form__input"
+                            value="[[data.backgroundColor]]"
+                            placeholder$="[[localize('Style.BackgroundColor')]]">
+                      </color-input>
+                    </div>
+
+                    <div class="form__item form__item--last">
+                      <div class="form__label">[[localize('Style.Margins.Label')]]</div>
+                      <color-input class="form__input-container">
+                        <input
+                            id="paddingInput"
+                            class="form__input"
+                            type="number"
+                            value="[[data.padding]]"
+                            on-change="_paddingChanged"
+                            placeholder$="[[localize('Style.Margins.Placeholder')]]">
+                      </color-input>
+                    </div>
+                  </div>
+                </iron-selector>
               </div>
-            </iron-selector>
+            </div>
           </div>
-        </div>
-      </div>
+
+        </template>
+      </dom-if>
+
     </div>
   </template>
 
@@ -261,7 +267,7 @@
 
             selectedTab: {
               type: String,
-              value: 'options'
+              // value: _ => 'options'
             },
 
             language: {
@@ -309,9 +315,16 @@
                   }
                 };
               }
-            }
+            },
+
           }
         };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        // workaround - property default is removed otherwise
+        requestAnimationFrame(_ => this.selectedTab = 'options');
       }
 
       _paddingChanged() {
