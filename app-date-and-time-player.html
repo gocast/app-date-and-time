@@ -2,6 +2,7 @@
 <link rel="import" href="../moment-import/moment-with-locales.html">
 <link rel="import" href="../moment-import/moment-timezone.html">
 <link rel="import" href="../analog-clock/analog-clock.html">
+<link rel="import" href="../fitted-text/fitted-text.html">
 
 <dom-module id="app-date-and-time-player">
   <template>
@@ -10,12 +11,14 @@
         box-sizing: border-box;
         display: inline-block;
         padding: 2%;
+        contain: strict;
+        overflow: hidden;
       }
 
       /* analog-clock block */
       analog-clock {
         @apply --layout-horizontal;
-        @apply --layout-center-center;        
+        @apply --layout-center-center;
         width: 100%;
         transition: width 0.01s, height 0.01s;
       }
@@ -29,10 +32,16 @@
         padding-top: 2%;
         transition: width 0.01s, height 0.01s;
         width: 100%;
+        position: relative
       }
 
+      .digital-clock__time {
+        width: 90%;
+        height: 50%;
+      }
       .digital-clock__date {
-        white-space: nowrap;
+        width: 90%;
+        height: 50%;
       }
     </style>
 
@@ -53,12 +62,18 @@
             class="digital-clock"
             style$="[[_computeDigitalClockHeight(showAnalogClock)]]"
             on-transitionend="_updateSizes">
-          <div class="digital-clock__date">
-            [[_computeDigitalClockPrefix(_currentTime, showWeekDay, showDate)]]
-          </div>
-          <div class="digital-clock__time">
-            [[_computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds)]]
-          </div>
+
+          <dom-if if="[[_computeShowDate(showWeekDay, showDate)]]">
+            <template>
+              <fitted-text data-id="digitalDate" class="digital-clock__date"></fitted-text>
+            </template>
+          </dom-if>
+
+          <dom-if if="[[showTime]]">
+            <template>
+              <fitted-text data-id="digitalTime" class="digital-clock__time"></fitted-text>
+            </template>
+          </dom-if>
         </div>
       </template>
     </dom-if>
@@ -73,26 +88,55 @@
       static get config() {
         return {
           properties: {
-            
+
             timezone: String,
+
+            showAnalogClock: {
+              type: Boolean,
+              observer: '_showAnalogClock',
+            },
 
             showDigitalClock: Boolean,
 
-            showAnalogClock: Boolean,
+            showTime: {
+              type: Boolean,
+              observer: '_showTimeChanged',
+            },
+
+            showSeconds: Boolean,
+
+            showWeekDay: Boolean,
+
+            showDate: {
+              type: Boolean,
+              observer: '_showDateChanged',
+            },
 
             useTwentyFourHours: Boolean,
 
-            showSeconds: Boolean,
-            
-            showWeekDay: Boolean,
-
-            showDate: Boolean,
+            padding: Number,
 
             _currentTime: Object,
 
-            _currentTimeInterval: Number
+            _currentTimeInterval: Number,
 
-          }
+            /**
+             * @type {HTMLElement}
+             */
+            _digitalDate: Object,
+
+            /**
+             * @type {HTMLElement}
+             */
+            _digitalTime: Object,
+
+          },
+
+          observers: [
+            '_paddingChanged(padding, _digitalDate, _digitalTime)',
+            '_digitalDateChanged(_currentTime, showWeekDay, showDate)',
+            '_digitalTimeChanged(_currentTime, useTwentyFourHours, showSeconds, showTime)',
+          ]
         };
       }
 
@@ -106,9 +150,107 @@
         this._stopTime();
       }
 
+      get digitalDate() {
+        if (!this._digitalDate) {
+          this._digitalDate = this.root.querySelector('[data-id=digitalDate]');
+        }
+        return this._digitalDate;
+      }
+
+      get digitalTime() {
+        if (!this._digitalTime) {
+          this._digitalTime = this.root.querySelector('[data-id=digitalTime]');
+        }
+        return this._digitalTime;
+      }
+
+      _paddingChanged(padding, digitalDate, digitalTime) {
+        // 20% width minimun
+        const width = Math.max(20, 100 - padding);
+        const widthStyle = `${width}%`;
+
+        if (digitalDate) {
+          digitalDate.style.width = widthStyle;
+        }
+        if (digitalTime) {
+          digitalTime.style.width = widthStyle;
+        }
+      }
+
+      _showAnalogClock(showAnalogClock) {
+        if (this.digitalTime) {
+          this.digitalTime.innerHTML = '';
+        }
+
+        if (this.digitalDate) {
+          this.digitalDate.innerHTML = '';
+        }
+      }
+
+      _showTimeChanged(showTime) {
+        // Clear text when hidden to prevent flush of invalid text while
+        // updating text sizes
+        if (!showTime && this.digitalTime) {
+          this.digitalTime.innerHTML = '';
+        }
+      }
+
+      _showDateChanged(showDate) {
+        // Clear text when hidden to prevent flush of invalid text while
+        // updating text sizes
+        if (!showDate && this.digitalDate) {
+          this.digitalDate.innerHTML = '';
+        }
+      }
+
+      _digitalDateChanged(_currentTime, showWeekDay, showDate) {
+        if (!_currentTime) {return;}
+        if (!showWeekDay && !showDate) {return;}
+
+        let prefix = '';
+
+        if (showWeekDay) {
+          prefix += _currentTime.format('dddd');
+          if (showDate) {
+            prefix += ', ';
+          }
+        }
+
+        if (showDate) {
+          prefix += _currentTime.format('DD MMMM');
+        }
+
+        if (this.digitalDate) {
+          requestAnimationFrame(_ => {
+            this.digitalDate.scale(prefix);
+          });
+        }
+      }
+
+      _digitalTimeChanged(_currentTime, useTwentyFourHours, showSeconds, showTime) {
+        if (!showTime || !_currentTime) {return;}
+
+        let format = '';
+
+        if (useTwentyFourHours) {
+          format += 'H:HH';
+        } else {
+          format += 'h:hh';
+        }
+
+        if (showSeconds) {
+          format += ':ss';
+        }
+
+        if (this.digitalTime) {
+          requestAnimationFrame(_ => {
+            this.digitalTime.scale(_currentTime.format(format));
+          });
+        }
+      }
+
       _startTime() {
         this._currentTime = moment(new Date());
-
         this._currentTimeInterval = setInterval(_ => {
           this._currentTime = moment(new Date());
         }, 500);
@@ -129,37 +271,8 @@
         }
       }
 
-      _computeDigitalClockPrefix(_currentTime, showWeekDay, showDate) {
-        let prefix = '';
-
-        if (showWeekDay) {
-          prefix += _currentTime.format('dddd');
-          if (showDate) {
-            prefix += ', ';
-          }
-        }
-
-        if (showDate) {
-          prefix += _currentTime.format('DD MMMM');
-        }
-
-        return prefix;
-      }
-
-      _computeDigitalTime(_currentTime, useTwentyFourHours, showSeconds) {
-        let format = '';
-  
-        if (useTwentyFourHours) {
-          format += 'H:HH';
-        } else {
-          format += 'h:hh';
-        }
-
-        if (showSeconds) {
-          format += ':ss';
-        }
-
-        return _currentTime.format(format);
+      _computeShowDate(showWeekDay, showDate) {
+        return showWeekDay || showDate;
       }
 
       _computeAnalogClockHeight(showDigitalClock) {
@@ -170,6 +283,8 @@
       }
 
       _computeDigitalClockHeight(showAnalogClock) {
+        setTimeout(_ => this._updateSizes());
+
         if (showAnalogClock) {
           return 'height: 35%';
         }
@@ -179,7 +294,7 @@
       _computeDate(_currentTime) {
         return _currentTime.toDate();
       }
- 
+
     }
 
     customElements.define(AppDateAndTimePlayer.is, AppDateAndTimePlayer);

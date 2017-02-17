@@ -68,20 +68,40 @@
         height: 100%;
         width: 100%;
       }
+
+      .digital-clock-options[disabled] {
+        display: none;
+      }
+
+      .digital-clock-options__title {
+        margin: 20px 0 10px 0;
+      }
+
+      paper-toggle-button {
+        margin-left: 10px;
+      }
+
+      @media (min-width: 640px) {
+        .form__label {
+          min-width: 220px;
+        }
+      }
     </style>
 
     <goc-apps-collection
         app-name="date-and-time"
         item="{{appInfo}}"
         language="[[language]]"></goc-apps-collection>
-    
+
     <div class="header-layout">
       <div class="header-layout__header">
         <div class="header-toolbar">
           <button class="icon-btn icon-btn--primary" on-click="_onBackClicked" title="Back">
-            <iron-icon icon="arrow-back"></iron-icon>
+            <touch-item><iron-icon icon="arrow-back"></iron-icon></touch-item>
           </button>
+
           <goc-app-icon size="small" app-name="date-and-time"></goc-app-icon>
+
           <div class="header-toolbar__main-content">
             <div class="header-toolbar__title">[[contentName]]</div>
             <div class="header-toolbar__subtitle">[[appInfo.displayName]]</div>
@@ -100,6 +120,8 @@
                 use-twenty-four-hours="[[data.useTwentyFourHours]]"
                 show-seconds="[[data.showSeconds]]"
                 show-week-day="[[data.showWeekDay]]"
+                show-time="[[data.showTime]]"
+                padding="[[data.padding]]"
                 show-date="[[data.showDate]]"></app-date-and-time-player>
           </div>
         </div>
@@ -117,25 +139,48 @@
                   <div class="form__label">[[localize('Options.DisplayAnalog')]]</div>
                   <paper-toggle-button checked="{{data.showAnalogClock}}"></paper-toggle-button>
                 </div>
-                <div class="form__item">
+                <div class="form__item form__item--last">
                   <div class="form__label">[[localize('Options.DisplayDigital')]]</div>
                   <paper-toggle-button checked="{{data.showDigitalClock}}"></paper-toggle-button>
                 </div>
-                <div class="form__item">
-                  <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
-                  <paper-toggle-button checked="{{data.showSeconds}}"></paper-toggle-button>
-                </div>
-                <div class="form__item">
-                  <div class="form__label">[[localize('Options.Use24hours')]]</div>
-                  <paper-toggle-button checked="{{data.useTwentyFourHours}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
-                </div>
-                <div class="form__item">
-                  <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
-                  <paper-toggle-button checked="{{data.showWeekDay}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
-                </div>
-                <div class="form__item form__item--last">
-                  <div class="form__label">[[localize('Options.ShowDate')]]</div>
-                  <paper-toggle-button checked="{{data.showDate}}" disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+
+                <div class="digital-clock-options" disabled$="[[!data.showDigitalClock]]">
+                  <h2 class="digital-clock-options__title">[[localize('Options.DigitalClockOptions.Title')]]</h2>
+
+                  <div class="form__item">
+                    <div class="form__label">[[localize('Options.DisplayTime')]]</div>
+                    <paper-toggle-button
+                        checked="{{data.showTime}}"
+                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                  </div>
+
+                  <div class="form__item">
+                    <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
+                    <paper-toggle-button
+                        checked="{{data.showWeekDay}}"
+                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                  </div>
+
+                  <div class="form__item">
+                    <div class="form__label">[[localize('Options.ShowDate')]]</div>
+                    <paper-toggle-button
+                        checked="{{data.showDate}}"
+                        disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
+                  </div>
+
+                  <div class="form__item">
+                    <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
+                    <paper-toggle-button
+                        checked="{{data.showSeconds}}"
+                        disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
+                  </div>
+
+                  <div class="form__item form__item--last">
+                    <div class="form__label">[[localize('Options.Use24hours')]]</div>
+                    <paper-toggle-button
+                        checked="{{data.useTwentyFourHours}}"
+                        disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
+                  </div>
                 </div>
               </div>
               <div class="form" name="style">
@@ -149,7 +194,8 @@
                         placeholder$="[[localize('Style.Color')]]">
                   </color-input>
                 </div>
-                <div class="form__item form__item--last">
+
+                <div class="form__item">
                   <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
                   <color-input class="form__input-container">
                     <input
@@ -157,7 +203,20 @@
                         class="form__input"
                         value="[[data.backgroundColor]]"
                         placeholder$="[[localize('Style.BackgroundColor')]]">
-                  </color-input>                  
+                  </color-input>
+                </div>
+
+                <div class="form__item form__item--last">
+                  <div class="form__label">[[localize('Style.Margins.Label')]]</div>
+                  <color-input class="form__input-container">
+                    <input
+                        id="paddingInput"
+                        class="form__input"
+                        type="number"
+                        value="[[data.padding]]"
+                        on-change="_paddingChanged"
+                        placeholder$="[[localize('Style.Margins.Placeholder')]]">
+                  </color-input>
                 </div>
               </div>
             </iron-selector>
@@ -168,7 +227,7 @@
   </template>
 
   <script>
-    
+
     class AppDateAndTime extends AppLocalizeMixin(Polymer.Element) {
 
       static get is() {return 'app-date-and-time';}
@@ -180,8 +239,20 @@
             data: {
               type: Object,
               value: _ => {
-                return {};
-              }
+                return {
+                  backgroundColor: '',
+                  color: '',
+                  showAnalogClock: true,
+                  showDate: true,
+                  showDigitalClock: true,
+                  showSeconds: false,
+                  showTime: true,
+                  showWeekDay: false,
+                  timezone: '',
+                  useTwentyFourHours: true,
+                  padding: 10,
+                };
+              },
             },
 
             contentName: String,
@@ -205,49 +276,49 @@
               value: _ => {
                 return {
                   "en": {
-                    "TabMenu.Options": "Options",
-                    "TabMenu.Style": "Style",
+                    "Options.DigitalClockOptions.Title": "Digital clock options",
                     "Options.DisplayAnalog": "Display analog clock",
                     "Options.DisplayDigital": "Display digital clock",
-                    "Options.DisplaySeconds": "Display the time with seconds",
+                    "Options.DisplaySeconds": "Show seconds",
+                    "Options.DisplayTime": "Display the time",
+                    "Options.ShowDate": "Display date",
+                    "Options.ShowWeekDay": "Display the day of the week",
                     "Options.Use24hours": "Use a 24-hour clock",
-                    "Options.ShowWeekDay": "Show the day of the week",
-                    "Options.ShowDate": "Show date",
+                    "Style.BackgroundColor": "Background color",
                     "Style.Color": "Color",
-                    "Style.BackgroundColor": "Background color"
+                    "Style.Margins.Label": "Margins",
+                    "Style.Margins.Placeholder": "%",
+                    "TabMenu.Options": "Options",
+                    "TabMenu.Style": "Style",
                   },
                   "es": {
-                    "TabMenu.Options": "Opciones",
-                    "TabMenu.Style": "Estilo",
+                    "Options.DigitalClockOptions.Title": "Opciones del reloj digital",
                     "Options.DisplayAnalog": "Mostrar reloj analógico",
                     "Options.DisplayDigital": "Mostrar reloj digital",
-                    "Options.DisplaySeconds": "Mostrar la hora con los segundos",
-                    "Options.Use24hours": "Usar el reloj de 24 horas",
+                    "Options.DisplaySeconds": "Mostrar segundos",
+                    "Options.DisplayTime": "Mostrar la hora",
+                    "Options.ShowDate": "Mostrar fecha",
                     "Options.ShowWeekDay": "Mostrar el día de la semana",
-                    "Options.ShowDate": "Mostrar feecha",
+                    "Options.Use24hours": "Usar el reloj de 24 horas",
+                    "Style.BackgroundColor": "Color de fondo",
                     "Style.Color": "Color",
-                    "Style.BackgroundColor": "Color de fondo"
+                    "Style.Margins.Label": "Márgenes",
+                    "Style.Margins.Placeholder": "%",
+                    "TabMenu.Options": "Opciones",
+                    "TabMenu.Style": "Estilo",
                   }
                 };
               }
             }
-            
-
           }
         };
       }
 
-      _updateContent() {
-        this.fire('update-content', {
-          data: this.data,
-          contentId: this.contentId,
-          updateRelease: false          
-        });
-      }
-
-      _computePreviewBackgrond(backgroundColor) {
-        backgroundColor = backgroundColor || 'transparent';
-        return `background: linear-gradient(to right, rgba(0,0,0,0), ${backgroundColor}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAADNJREFUOBFjvHHjxn8GPEBDQ4MRjzQDEz5JYuRGDWAYBIGIN45B0UgonYxG42CIRopjAQAbjQemQaw2YQAAAABJRU5ErkJggg==')`;
+      _paddingChanged() {
+        const padding = Number(this.$.paddingInput.value);
+        if (!isNaN(padding) && this.data.padding !== padding) {
+          this.set('data.padding', padding);
+        }
       }
 
       _onBackClicked() {
@@ -255,6 +326,26 @@
           bubbles: true,
           composed: true
         }));
+      }
+
+      _updateContent() {
+        this.dispatchEvent(new CustomEvent('update-content', {
+          composed: true,
+          detail: {
+            data: this.data,
+            contentId: this.contentId,
+            updateRelease: false
+          }
+        }))
+      }
+
+      _computePreviewBackgrond(backgroundColor) {
+        backgroundColor = backgroundColor || 'transparent';
+        return `background: linear-gradient(to right, rgba(0,0,0,0), ${backgroundColor}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAADNJREFUOBFjvHHjxn8GPEBDQ4MRjzQDEz5JYuRGDWAYBIGIN45B0UgonYxG42CIRopjAQAbjQemQaw2YQAAAABJRU5ErkJggg==')`;
+      }
+
+      _computeDisabledTimeOptions(showTime, showDigitalClock) {
+        return !showTime || !showDigitalClock;
       }
 
     }

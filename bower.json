@@ -4,6 +4,7 @@
   "dependencies": {
     "analog-clock": "git@github.com:sharedlabs/analog-clock.git#^0.1.0",
     "app-localize-mixin": "git@github.com:sharedlabs/app-localize-mixin.git#^1.0.0",
+    "fitted-text": "git@github.com:sharedlabs/fitted-text.git#^0.2.0",
     "color-input": "git@github.com:sharedlabs/color-input.git#^0.1.0",
     "goc-apps": "git@github.com:gocast/goc-apps.git",
     "goc-icons": "git@github.com:gocast/goc-icons.git",
@@ -19,5 +20,15 @@
     "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
     "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "resolutions": {
+    "polymer": "2.0-preview",
+    "iron-selector": "2.0-preview",
+    "webcomponentsjs": "v1",
+    "paper-styles": "2.0-preview",
+    "iron-flex-layout": "2.0-preview",
+    "iron-iconset-svg": "2.0-preview",
+    "iron-icon": "2.0-preview",
+    "iron-meta": "2.0-preview"
   }
 }
