@@ -329,7 +329,7 @@
       }
 
       _updateContent() {
-        this.dispatchEvent(new CustomEvent('update-content', {
+        this.dispatchEvent(new CustomEvent('content-update', {
           composed: true,
           detail: {
             data: this.data,

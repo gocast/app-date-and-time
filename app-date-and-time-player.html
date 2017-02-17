@@ -89,6 +89,25 @@
         return {
           properties: {
 
+            defaultData: {
+              type: Object,
+              value: _ => {
+                return {
+                  backgroundColor: '',
+                  color: '',
+                  showAnalogClock: true,
+                  showDate: true,
+                  showDigitalClock: true,
+                  showSeconds: false,
+                  showTime: true,
+                  showWeekDay: false,
+                  timezone: '',
+                  useTwentyFourHours: true,
+                  padding: 10,
+                };
+              }
+            },
+
             timezone: String,
 
             showAnalogClock: {
@@ -142,6 +161,7 @@
 
       connectedCallback() {
         super.connectedCallback();
+        Object.assign(this, this.defaultData);
         this._startTime();
       }
 
