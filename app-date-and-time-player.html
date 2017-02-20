@@ -54,31 +54,31 @@
 
 
     <div id="container">
-      <dom-if if="[[showAnalogClock]]">
+      <dom-if if="[[data.showAnalogClock]]" on-dom-change="_onAnalogClockDomChange">
         <template>
           <analog-clock
-              style$="[[_computeAnalogClockHeight(showDigitalClock)]]"
               date="[[_computeDate(_currentTime)]]"
-              show-seconds="[[showSeconds]]"
+              style$="[[_computeAnalogClockHeight(data.showDigitalClock, _analogClockVisible)]]"
+              show-seconds="[[data.showSeconds]]"
               on-transitionend="_updateSizes">
           </analog-clock>
         </template>
       </dom-if>
 
-      <dom-if if="[[showDigitalClock]]">
+      <dom-if if="[[data.showDigitalClock]]" on-dom-change="_onDigitalClockDomChange">
         <template>
           <div
               class="digital-clock"
-              style$="[[_computeDigitalClockHeight(showAnalogClock)]]"
+              style$="[[_computeDigitalClockHeight(data.showAnalogClock, _digitalClockVisible)]]"
               on-transitionend="_updateSizes">
 
-            <dom-if if="[[_computeShowDate(showWeekDay, showDate)]]">
+            <dom-if if="[[_computeShowDate(data.showWeekDay, data.showDate)]]">
               <template>
                 <fitted-text data-id="digitalDate" class="digital-clock__date"></fitted-text>
               </template>
             </dom-if>
 
-            <dom-if if="[[showTime]]">
+            <dom-if if="[[data.showTime]]">
               <template>
                 <fitted-text data-id="digitalTime" class="digital-clock__time"></fitted-text>
               </template>
@@ -118,32 +118,7 @@
               }
             },
 
-            timezone: String,
-
-            showAnalogClock: {
-              type: Boolean,
-              observer: '_showAnalogClock',
-            },
-
-            showDigitalClock: Boolean,
-
-            showTime: {
-              type: Boolean,
-              observer: '_showTimeChanged',
-            },
-
-            showSeconds: Boolean,
-
-            showWeekDay: Boolean,
-
-            showDate: {
-              type: Boolean,
-              observer: '_showDateChanged',
-            },
-
-            useTwentyFourHours: Boolean,
-
-            padding: Number,
+            data: Object,
 
             _currentTime: Object,
 
@@ -162,9 +137,12 @@
           },
 
           observers: [
-            '_paddingChanged(padding, _digitalDate, _digitalTime)',
-            '_digitalDateChanged(_currentTime, showWeekDay, showDate)',
-            '_digitalTimeChanged(_currentTime, useTwentyFourHours, showSeconds, showTime)',
+            '_dataChanged(data.*)',
+            '_paddingChanged(data.padding, _digitalDate, _digitalTime)',
+            '_backgroundColorChanged(data.backgroundColor)',
+            '_colorChanged(data.color)',
+            '_digitalDateChanged(_currentTime, data.showWeekDay, data.showDate)',
+            '_digitalTimeChanged(_currentTime, data.useTwentyFourHours, data.showSeconds, data.showTime)',
           ]
         };
       }
@@ -180,15 +158,24 @@
       connectedCallback() {
         super.connectedCallback();
         this._toggleListeners({enable: true});
-        Object.assign(this, this.defaultData);
-        requestAnimationFrame(_ => this._updateSizes());
         this._startTime();
+        Polymer.RenderStatus.afterNextRender(_ => {
+          this._updateSizes();
+        });
       }
 
       disconnectedCallback() {
         super.disconnectedCallback();
         this._toggleListeners({enable: false});
         this._stopTime();
+      }
+
+
+      get digitalTime() {
+        if (!this._digitalTime) {
+          this._digitalTime = this.root.querySelector('[data-id=digitalTime]');
+        }
+        return this._digitalTime;
       }
 
       get digitalDate() {
@@ -198,16 +185,30 @@
         return this._digitalDate;
       }
 
-      get digitalTime() {
-        if (!this._digitalTime) {
-          this._digitalTime = this.root.querySelector('[data-id=digitalTime]');
-        }
-        return this._digitalTime;
+      _onDigitalClockDomChange() {
+        this._digitalClockVisible = true;
       }
 
-      _toggleListeners({enable}) {
-        const method = enable ? 'addEventListener' : 'removeEventListener';
-        window[method]('resize', this._windowResize);
+      _onAnalogClockDomChange() {
+        this._analogClockVisible = true;
+      }
+
+      _dataChanged(changes) {
+        if (changes.path === 'data') {
+          if (!changes.value) {
+            this.data = Object.assign({}, this._defaultData);
+          }
+        } else {
+          this.notifyPath(changes.path);
+        }
+      }
+
+      _backgroundColorChanged(backgroundColor) {
+        this.style.backgroundColor = backgroundColor || 'transparent';
+      }
+
+      _colorChanged(color) {
+        this.style.color = color || '#000';
       }
 
       _paddingChanged(padding, digitalDate, digitalTime) {
@@ -220,16 +221,6 @@
         }
         if (digitalTime) {
           digitalTime.style.width = widthStyle;
-        }
-      }
-
-      _showAnalogClock(showAnalogClock) {
-        if (this.digitalTime) {
-          this.digitalTime.innerHTML = '';
-        }
-
-        if (this.digitalDate) {
-          this.digitalDate.innerHTML = '';
         }
       }
 
@@ -313,6 +304,11 @@
         }
       }
 
+      _toggleListeners({enable}) {
+        const method = enable ? 'addEventListener' : 'removeEventListener';
+        window[method]('resize', this._windowResize);
+      }
+
       _startTime() {
         this._currentTime = moment(new Date());
         this._currentTimeInterval = setInterval(_ => {
@@ -328,10 +324,14 @@
       }
 
       _updateSizes() {
-        if (this.showAnalogClock) {
+        if (!this.data) {return}
+
+        if (this.data.showAnalogClock) {
           const analogClock = this.shadowRoot.querySelector('analog-clock');
-          const rect = analogClock.getBoundingClientRect();
-          analogClock.width = rect.height;
+          if (analogClock) {
+            const rect = analogClock.getBoundingClientRect();
+            analogClock.width = rect.height;
+          }
         }
 
         const width = this.offsetWidth;
@@ -352,15 +352,25 @@
         return showWeekDay || showDate;
       }
 
-      _computeAnalogClockHeight(showDigitalClock) {
+      _computeAnalogClockHeight(showDigitalClock, _analogClockVisible) {
+        if(!_analogClockVisible) {return;}
+
+        Polymer.RenderStatus.afterNextRender(_ => {
+          this._updateSizes();
+        });
+
         if (showDigitalClock) {
           return 'height: 65%';
         }
         return 'height: 100%';
       }
 
-      _computeDigitalClockHeight(showAnalogClock) {
-        setTimeout(_ => this._updateSizes());
+      _computeDigitalClockHeight(showAnalogClock, _digitalClockVisible) {
+        if (!_digitalClockVisible) {return;}
+
+        Polymer.RenderStatus.afterNextRender(_ => {
+          this._updateSizes();
+        });
 
         if (showAnalogClock) {
           return 'height: 35%';

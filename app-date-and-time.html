@@ -105,7 +105,8 @@
             <div class="header-toolbar__title">[[contentName]]</div>
             <div class="header-toolbar__subtitle">[[appInfo.displayName]]</div>
           </div>
-          <!--<paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>-->
+
+          <paper-spinner-lite class="header-toolbar__spinner" active="[[loading]]"></paper-spinner-lite>
         </div>
       </div>
 
@@ -115,16 +116,7 @@
           <div class="header-layout__content">
             <div class="col">
               <div class="preview-container" style$="[[_computePreviewBackgrond(data.backgroundColor)]]">
-                <app-date-and-time-player
-                    timezone="[[data.timezone]]"
-                    show-digital-clock="[[data.showDigitalClock]]"
-                    show-analog-clock="[[data.showAnalogClock]]"
-                    use-twenty-four-hours="[[data.useTwentyFourHours]]"
-                    show-seconds="[[data.showSeconds]]"
-                    show-week-day="[[data.showWeekDay]]"
-                    show-time="[[data.showTime]]"
-                    padding="[[data.padding]]"
-                    show-date="[[data.showDate]]"></app-date-and-time-player>
+                <app-date-and-time-player data="[[data]]"></app-date-and-time-player>
               </div>
             </div>
 
@@ -139,11 +131,15 @@
                   <div class="form" name="options">
                     <div class="form__item">
                       <div class="form__label">[[localize('Options.DisplayAnalog')]]</div>
-                      <paper-toggle-button checked="{{data.showAnalogClock}}"></paper-toggle-button>
+                      <paper-toggle-button
+                          on-change="_updateContent"
+                          checked="{{data.showAnalogClock}}"></paper-toggle-button>
                     </div>
                     <div class="form__item form__item--last">
                       <div class="form__label">[[localize('Options.DisplayDigital')]]</div>
-                      <paper-toggle-button checked="{{data.showDigitalClock}}"></paper-toggle-button>
+                      <paper-toggle-button
+                          on-change="_updateContent"
+                          checked="{{data.showDigitalClock}}"></paper-toggle-button>
                     </div>
 
                     <div class="digital-clock-options" disabled$="[[!data.showDigitalClock]]">
@@ -152,6 +148,7 @@
                       <div class="form__item">
                         <div class="form__label">[[localize('Options.DisplayTime')]]</div>
                         <paper-toggle-button
+                            on-change="_updateContent"
                             checked="{{data.showTime}}"
                             disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
                       </div>
@@ -159,6 +156,7 @@
                       <div class="form__item">
                         <div class="form__label">[[localize('Options.ShowWeekDay')]]</div>
                         <paper-toggle-button
+                            on-change="_updateContent"
                             checked="{{data.showWeekDay}}"
                             disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
                       </div>
@@ -166,6 +164,7 @@
                       <div class="form__item">
                         <div class="form__label">[[localize('Options.ShowDate')]]</div>
                         <paper-toggle-button
+                            on-change="_updateContent"
                             checked="{{data.showDate}}"
                             disabled="[[!data.showDigitalClock]]"></paper-toggle-button>
                       </div>
@@ -173,6 +172,7 @@
                       <div class="form__item">
                         <div class="form__label">[[localize('Options.DisplaySeconds')]]</div>
                         <paper-toggle-button
+                            on-change="_updateContent"
                             checked="{{data.showSeconds}}"
                             disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
                       </div>
@@ -180,6 +180,7 @@
                       <div class="form__item form__item--last">
                         <div class="form__label">[[localize('Options.Use24hours')]]</div>
                         <paper-toggle-button
+                            on-change="_updateContent"
                             checked="{{data.useTwentyFourHours}}"
                             disabled="[[_computeDisabledTimeOptions(data.showTime, data.showDigitalClock)]]"></paper-toggle-button>
                       </div>
@@ -190,10 +191,11 @@
                       <div class="form__label">[[localize('Style.Color')]]</div>
                       <color-input class="form__input-container">
                         <input
-                            id="colorInput"
+                            name="color"
                             class="form__input"
                             value="[[data.color]]"
-                            placeholder$="[[localize('Style.Color')]]">
+                            on-keyup="_colorChanged"
+                            placeholder$="[[localize('Style.Color.Placeholder')]]">
                       </color-input>
                     </div>
 
@@ -201,10 +203,11 @@
                       <div class="form__label">[[localize('Style.BackgroundColor')]]</div>
                       <color-input class="form__input-container">
                         <input
-                            id="backgroundColorInput"
+                            name="backgroundColor"
                             class="form__input"
                             value="[[data.backgroundColor]]"
-                            placeholder$="[[localize('Style.BackgroundColor')]]">
+                            on-keyup="_backgroundColorChanged"
+                            placeholder$="[[localize('Style.BackgroundColor.Placeholder')]]">
                       </color-input>
                     </div>
 
@@ -212,11 +215,11 @@
                       <div class="form__label">[[localize('Style.Margins.Label')]]</div>
                       <color-input class="form__input-container">
                         <input
-                            id="paddingInput"
+                            name="padding"
                             class="form__input"
                             type="number"
                             value="[[data.padding]]"
-                            on-change="_paddingChanged"
+                            on-keyup="_paddingChanged"
                             placeholder$="[[localize('Style.Margins.Placeholder')]]">
                       </color-input>
                     </div>
@@ -261,10 +264,7 @@
               },
             },
 
-            data: {
-              type: Object,
-              observer: '_dataChanged',
-            },
+            data: Object,
 
             contentName: String,
 
@@ -275,12 +275,9 @@
               // value: _ => 'options'
             },
 
-            language: {
-              type: String,
-              value: _ => {
-                return 'en'
-              }
-            },
+            visible: Boolean,
+
+            loading: Boolean,
 
             /**
              * True when data has been loaded and element is visible.
@@ -291,6 +288,13 @@
               value: false,
               computed: '_computeAppVisible(visible, data)',
               observer: '_appVisibleChanged',
+            },
+
+            language: {
+              type: String,
+              value: _ => {
+                return 'en'
+              }
             },
 
             resources: {
@@ -307,7 +311,9 @@
                     "Options.ShowWeekDay": "Display the day of the week",
                     "Options.Use24hours": "Use a 24-hour clock",
                     "Style.BackgroundColor": "Background color",
+                    "Style.BackgroundColor.Placeholder": "Use hex, rgb, rgba...",
                     "Style.Color": "Color",
+                    "Style.Color.Placeholder": "Use hex, rgb, rgba...",
                     "Style.Margins.Label": "Margins",
                     "Style.Margins.Placeholder": "%",
                     "TabMenu.Options": "Options",
@@ -323,7 +329,9 @@
                     "Options.ShowWeekDay": "Mostrar el día de la semana",
                     "Options.Use24hours": "Usar el reloj de 24 horas",
                     "Style.BackgroundColor": "Color de fondo",
+                    "Style.BackgroundColor.Placeholder": "Utiliza hex, rgb, rgba...",
                     "Style.Color": "Color",
+                    "Style.Color.Placeholder": "Utiliza hex, rgb, rgba...",
                     "Style.Margins.Label": "Márgenes",
                     "Style.Margins.Placeholder": "%",
                     "TabMenu.Options": "Opciones",
@@ -335,6 +343,10 @@
 
           },
 
+          observers: [
+            '_dataChanged(data, visible)'
+          ]
+
         };
       }
 
@@ -342,17 +354,48 @@
         super.connectedCallback();
       }
 
-      _dataChanged(data) {
+      _dataChanged(data, visible) {
+        if (!visible) {return;}
+
         // Initialize data.
-        if (!data) {
+        if (data === null) {
           this.data = Object.assign({}, this._defaultData);
         }
       }
 
       _paddingChanged() {
-        const padding = Number(this.$.paddingInput.value);
-        if (!isNaN(padding) && this.data.padding !== padding) {
+        const input = this.root.querySelector('input[name=padding]');
+        const padding = Number(input.value);
+        const isValid = !isNaN(padding);
+        const hasChanged = this.data.padding !== padding;
+
+        if (isValid && hasChanged) {
           this.set('data.padding', padding);
+          this._updateContent();
+        }
+      }
+
+      _backgroundColorChanged() {
+        const input = this.root.querySelector('input[name=backgroundColor]');
+        const backgroundColor = input.value;
+        const isValid = !backgroundColor || this._isColorValid(backgroundColor);
+        const hasChanged = this.data.backgroundColor !== backgroundColor;
+
+        if (isValid && hasChanged) {
+          this.set('data.backgroundColor', backgroundColor);
+          this._updateContent();
+        }
+      }
+
+      _colorChanged() {
+        const input = this.root.querySelector('input[name=color]');
+        const color = input.value;
+        const isValid = !color || this._isColorValid(color);
+        const hasChanged = this.data.color !== color;
+
+        if (isValid && hasChanged) {
+          this.set('data.color', color);
+          this._updateContent();
         }
       }
 
@@ -386,12 +429,20 @@
       }
 
       _computePreviewBackgrond(backgroundColor) {
-        backgroundColor = backgroundColor || 'transparent';
-        return `background: linear-gradient(to right, rgba(0,0,0,0), ${backgroundColor}), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAADNJREFUOBFjvHHjxn8GPEBDQ4MRjzQDEz5JYuRGDWAYBIGIN45B0UgonYxG42CIRopjAQAbjQemQaw2YQAAAABJRU5ErkJggg==')`;
+        if (backgroundColor) {
+          return `background: ${backgroundColor}`;
+        }
+        return `background: linear-gradient(to right, rgba(0,0,0,0), transparent), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAADNJREFUOBFjvHHjxn8GPEBDQ4MRjzQDEz5JYuRGDWAYBIGIN45B0UgonYxG42CIRopjAQAbjQemQaw2YQAAAABJRU5ErkJggg==')`;
       }
 
       _computeDisabledTimeOptions(showTime, showDigitalClock) {
         return !showTime || !showDigitalClock;
+      }
+
+      _isColorValid(color) {
+        const el = document.createElement('div');
+        el.style.backgroundColor = color;
+        return Boolean(el.style.backgroundColor);
       }
 
     }
