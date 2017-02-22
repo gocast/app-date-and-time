@@ -158,7 +158,7 @@
         super.connectedCallback();
         this._toggleListeners({enable: true});
         this._startTime();
-        Polymer.RenderStatus.afterNextRender(_ => {
+        Polymer.RenderStatus.afterNextRender(null, _ => {
           this._updateSizes();
         });
       }
@@ -354,7 +354,7 @@
       _computeAnalogClockHeight(showDigitalClock, _analogClockVisible) {
         if(!_analogClockVisible) {return;}
 
-        Polymer.RenderStatus.afterNextRender(_ => {
+        Polymer.RenderStatus.afterNextRender(null, _ => {
           this._updateSizes();
         });
 
@@ -367,7 +367,7 @@
       _computeDigitalClockHeight(showAnalogClock, _digitalClockVisible) {
         if (!_digitalClockVisible) {return;}
 
-        Polymer.RenderStatus.afterNextRender(_ => {
+        Polymer.RenderStatus.afterNextRender(null, _ => {
           this._updateSizes();
         });
 
