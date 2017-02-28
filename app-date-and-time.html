@@ -115,7 +115,7 @@
 
           <div class="header-layout__content">
             <div class="col">
-              <div class="preview-container" style$="[[_computePreviewBackgrond(data.backgroundColor)]]">
+              <div class="preview-container" style$="[[_computePreviewBackground(data.backgroundColor)]]">
                 <app-date-and-time-player data="[[data]]"></app-date-and-time-player>
               </div>
             </div>
@@ -428,7 +428,7 @@
         return data && visible;
       }
 
-      _computePreviewBackgrond(backgroundColor) {
+      _computePreviewBackground(backgroundColor) {
         if (backgroundColor) {
           return `background: ${backgroundColor}`;
         }
