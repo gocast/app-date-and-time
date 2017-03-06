@@ -94,56 +94,54 @@
 
       static get is() {return 'app-date-and-time-player';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-
-            _defaultData: {
-              type: Object,
-              value: _ => {
-                return {
-                  backgroundColor: '',
-                  color: '',
-                  showAnalogClock: true,
-                  showDate: true,
-                  showDigitalClock: true,
-                  showSeconds: false,
-                  showTime: true,
-                  showWeekDay: false,
-                  timezone: '',
-                  useTwentyFourHours: true,
-                  padding: 10,
-                };
-              }
-            },
-
-            data: Object,
-
-            _currentTime: Object,
-
-            _currentTimeInterval: Number,
-
-            /**
-             * @type {HTMLElement}
-             */
-            _digitalDate: Object,
-
-            /**
-             * @type {HTMLElement}
-             */
-            _digitalTime: Object,
-
+          _defaultData: {
+            type: Object,
+            value: _ => {
+              return {
+                backgroundColor: '',
+                color: '',
+                showAnalogClock: true,
+                showDate: true,
+                showDigitalClock: true,
+                showSeconds: false,
+                showTime: true,
+                showWeekDay: false,
+                timezone: '',
+                useTwentyFourHours: true,
+                padding: 10,
+              };
+            }
           },
 
-          observers: [
-            '_dataChanged(data.*)',
-            '_paddingChanged(data.padding, _digitalDate, _digitalTime)',
-            '_backgroundColorChanged(data.backgroundColor)',
-            '_colorChanged(data.color)',
-            '_digitalDateChanged(_currentTime, data.showWeekDay, data.showDate)',
-            '_digitalTimeChanged(_currentTime, data.useTwentyFourHours, data.showSeconds, data.showTime)',
-          ]
+          data: Object,
+
+          _currentTime: Object,
+
+          _currentTimeInterval: Number,
+
+          /**
+           * @type {HTMLElement}
+           */
+          _digitalDate: Object,
+
+          /**
+           * @type {HTMLElement}
+           */
+          _digitalTime: Object,
         };
+      }
+
+      static get observers() {
+        return [
+          '_backgroundColorChanged(data.backgroundColor)',
+          '_colorChanged(data.color)',
+          '_dataChanged(data.*)',
+          '_digitalDateChanged(_currentTime, data.showWeekDay, data.showDate)',
+          '_digitalTimeChanged(_currentTime, data.useTwentyFourHours, data.showSeconds, data.showTime)',
+          '_paddingChanged(data.padding, _digitalDate, _digitalTime)',
+        ];
       }
 
       constructor() {

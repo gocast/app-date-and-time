@@ -241,113 +241,110 @@
 
       static get is() {return 'app-date-and-time';}
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
-
-            _defaultData: {
-              type: Object,
-              value: _ => {
-                return {
-                  backgroundColor: '',
-                  color: '',
-                  showAnalogClock: true,
-                  showDate: true,
-                  showDigitalClock: true,
-                  showSeconds: false,
-                  showTime: true,
-                  showWeekDay: false,
-                  timezone: '',
-                  useTwentyFourHours: true,
-                  padding: 10,
-                };
-              },
+          _defaultData: {
+            type: Object,
+            value: _ => {
+              return {
+                backgroundColor: '',
+                color: '',
+                showAnalogClock: true,
+                showDate: true,
+                showDigitalClock: true,
+                showSeconds: false,
+                showTime: true,
+                showWeekDay: false,
+                timezone: '',
+                useTwentyFourHours: true,
+                padding: 10,
+              };
             },
-
-            data: Object,
-
-            contentName: String,
-
-            contentId: String,
-
-            selectedTab: {
-              type: String,
-              // value: _ => 'options'
-            },
-
-            visible: Boolean,
-
-            loading: Boolean,
-
-            /**
-             * True when data has been loaded and element is visible.
-             * @type {Boolean}
-             */
-            _appVisible: {
-              type: Boolean,
-              value: false,
-              computed: '_computeAppVisible(visible, data)',
-              observer: '_appVisibleChanged',
-            },
-
-            language: {
-              type: String,
-              value: _ => {
-                return 'en'
-              }
-            },
-
-            resources: {
-              type: Object,
-              value: _ => {
-                return {
-                  "en": {
-                    "Options.DigitalClockOptions.Title": "Digital clock options",
-                    "Options.DisplayAnalog": "Display analog clock",
-                    "Options.DisplayDigital": "Display digital clock",
-                    "Options.DisplaySeconds": "Show seconds",
-                    "Options.DisplayTime": "Display the time",
-                    "Options.ShowDate": "Display date",
-                    "Options.ShowWeekDay": "Display the day of the week",
-                    "Options.Use24hours": "Use a 24-hour clock",
-                    "Style.BackgroundColor": "Background color",
-                    "Style.BackgroundColor.Placeholder": "Use hex, rgb, rgba...",
-                    "Style.Color": "Color",
-                    "Style.Color.Placeholder": "Use hex, rgb, rgba...",
-                    "Style.Margins.Label": "Margins",
-                    "Style.Margins.Placeholder": "%",
-                    "TabMenu.Options": "Options",
-                    "TabMenu.Style": "Style",
-                  },
-                  "es": {
-                    "Options.DigitalClockOptions.Title": "Opciones del reloj digital",
-                    "Options.DisplayAnalog": "Mostrar reloj analógico",
-                    "Options.DisplayDigital": "Mostrar reloj digital",
-                    "Options.DisplaySeconds": "Mostrar segundos",
-                    "Options.DisplayTime": "Mostrar la hora",
-                    "Options.ShowDate": "Mostrar fecha",
-                    "Options.ShowWeekDay": "Mostrar el día de la semana",
-                    "Options.Use24hours": "Usar el reloj de 24 horas",
-                    "Style.BackgroundColor": "Color de fondo",
-                    "Style.BackgroundColor.Placeholder": "Utiliza hex, rgb, rgba...",
-                    "Style.Color": "Color",
-                    "Style.Color.Placeholder": "Utiliza hex, rgb, rgba...",
-                    "Style.Margins.Label": "Márgenes",
-                    "Style.Margins.Placeholder": "%",
-                    "TabMenu.Options": "Opciones",
-                    "TabMenu.Style": "Estilo",
-                  }
-                };
-              }
-            },
-
           },
 
-          observers: [
-            '_dataChanged(data, visible)'
-          ]
+          data: Object,
 
+          contentName: String,
+
+          contentId: String,
+
+          selectedTab: {
+            type: String,
+            // value: _ => 'options'
+          },
+
+          visible: Boolean,
+
+          loading: Boolean,
+
+          /**
+           * True when data has been loaded and element is visible.
+           * @type {Boolean}
+           */
+          _appVisible: {
+            type: Boolean,
+            value: false,
+            computed: '_computeAppVisible(visible, data)',
+            observer: '_appVisibleChanged',
+          },
+
+          language: {
+            type: String,
+            value: _ => {
+              return 'en'
+            }
+          },
+
+          resources: {
+            type: Object,
+            value: _ => {
+              return {
+                "en": {
+                  "Options.DigitalClockOptions.Title": "Digital clock options",
+                  "Options.DisplayAnalog": "Display analog clock",
+                  "Options.DisplayDigital": "Display digital clock",
+                  "Options.DisplaySeconds": "Show seconds",
+                  "Options.DisplayTime": "Display the time",
+                  "Options.ShowDate": "Display date",
+                  "Options.ShowWeekDay": "Display the day of the week",
+                  "Options.Use24hours": "Use a 24-hour clock",
+                  "Style.BackgroundColor": "Background color",
+                  "Style.BackgroundColor.Placeholder": "Use hex, rgb, rgba...",
+                  "Style.Color": "Color",
+                  "Style.Color.Placeholder": "Use hex, rgb, rgba...",
+                  "Style.Margins.Label": "Margins",
+                  "Style.Margins.Placeholder": "%",
+                  "TabMenu.Options": "Options",
+                  "TabMenu.Style": "Style",
+                },
+                "es": {
+                  "Options.DigitalClockOptions.Title": "Opciones del reloj digital",
+                  "Options.DisplayAnalog": "Mostrar reloj analógico",
+                  "Options.DisplayDigital": "Mostrar reloj digital",
+                  "Options.DisplaySeconds": "Mostrar segundos",
+                  "Options.DisplayTime": "Mostrar la hora",
+                  "Options.ShowDate": "Mostrar fecha",
+                  "Options.ShowWeekDay": "Mostrar el día de la semana",
+                  "Options.Use24hours": "Usar el reloj de 24 horas",
+                  "Style.BackgroundColor": "Color de fondo",
+                  "Style.BackgroundColor.Placeholder": "Utiliza hex, rgb, rgba...",
+                  "Style.Color": "Color",
+                  "Style.Color.Placeholder": "Utiliza hex, rgb, rgba...",
+                  "Style.Margins.Label": "Márgenes",
+                  "Style.Margins.Placeholder": "%",
+                  "TabMenu.Options": "Opciones",
+                  "TabMenu.Style": "Estilo",
+                }
+              };
+            }
+          },
         };
+      }
+
+      static get observers() {
+        return [
+          '_dataChanged(data, visible)'
+        ];
       }
 
       connectedCallback() {
